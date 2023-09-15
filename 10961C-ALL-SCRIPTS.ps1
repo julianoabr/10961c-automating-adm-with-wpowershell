@@ -116,23 +116,142 @@ Get-Help About*
 
 Get-Help About_aliases -ShowWindow
 
+#3.
 
+Get-Help About_EventLogs -ShowWindow
 
-##########PAREI NA PAGINA 45
+#4.
+
+Get-Help About_Type_Accelerators -ShowWindow
+
+Get-Help About_Type_Operators -ShowWindow
+
+[console]::beep(500,300)
+
+[console]::beep(2000,500)
+
+[console]::Beep(1000,400)
 
 <#
 
+Question
 You wish to join multiple computers to the Adatum domain. The Add-Computer
 cmdlet’s -ComputerName parameter accepts multiple values. Which of the following
 is a set of valid values for this parameter?
-
--Computername Lon-CL2,LON-CL3,LON-CL4
-
--Computername "Lon-CL2,LON-CL3,LON-CL4"
+Select the correct answer.
+-ComputerName LON-CL2;LON-CL3;LON-CL4
+-ComputerName “LON-CL2, LON-CL3, LON-CL4”
+-ComputerName LON-CL2 LON-CL3 LON-CL4
+-ComputerName LON-CL2, -ComputerName LON-CL3 -ComputerName
+LON-CL4
+-ComputerName LON-CL2,LON-CL3,LON-CL4
 
 #>
 
+Get-Help -Name Add-Computer -ShowWindow
+
+Add-Computer -ComputerName LON-CL2,LON-CL3,LON-CL4
+
+
 #LESSON 3 - Finding Commands
+
+
+<#
+
+Demonstration Steps
+1. Open the Windows PowerShell console as an administrator on LON-DC1.
+2. Display a list of currently loaded modules.
+3. Run the cmdlet that returns a list of Active Directory users.
+4. Display the updated list of currently loaded modules.
+5. Display a list of the currently available modules, including those that are not loaded.
+6. Import the module that contains cmdlets for managing features installed on a server and display the
+updated list of loaded modules.
+
+#>
+
+#2
+
+Get-Module
+
+#3
+
+Get-ADUser -Filter * -SearchBase "dc=domain,dc=intranet"
+
+#4
+
+Get-Module
+
+#5
+
+Get-Module -All
+
+#6
+
+Import-Module -Name ServerManager -Verbose
+
+<#
+
+Demonstration: Searching for cmdlets
+In this demonstration, you will see how to use several techniques to discover new cmdlets.
+Demonstration Steps
+1. Show a list of commands that deal with IPv4 addresses.
+2. There is a command able to read Windows Event Logs (actually, there are two). Find one that can
+read event logs from a remote computer in addition to the local one.
+
+#>
+
+#1
+Get-Command -Name *IPv4*
+
+#2
+
+Get-Command -Noun *EventLog*
+
+Get-Command -Name *EventLog* -ArgumentList "ComputerName"
+
+
+#ALIASES
+
+#Demonstration Steps
+#1. Run the dir and Get-ChildItem commands, and then compare the results.
+
+dir
+Get-ChildItem 
+
+#Result is the same
+
+#2. View the definition for the dir alias.
+
+Get-Alias -Name dir -Verbose
+
+#3. Create a new alias, list, for the Get-ChildItem command.
+
+Get-Help New-Alias -ShowWindow
+
+New-Alias -Name "List" Get-ChildItem
+
+#4. Run the list command and compare the results to those of dir and Get-ChildItem.
+
+List
+
+#5. Show the definition for the list alias.
+
+Get-Alias -Name List
+
+#6. Show the various aliases for Get-ChildItem.
+
+Get-Alias | Where-Object -FilterScript {$_.ReferencedCommand -like "Get-ChildItem"}
+
+
+#Using Show-Command
+
+
+
+
+##########STOPPED ON PAGE 50
+
+
+
 
 
 <#
@@ -144,11 +263,6 @@ default, these are %systemdir%\WindowsPowerShell\v1.0\Modules and %userprofiles%
 autoloading when searching for help topics. The Get-Command command also uses autoloading.
 
 #>
-
-
-Get-Module -All
-
-get-module -ListAvailable
 
 #RSAT ON WINDOWS 10
 #http://woshub.com/install-rsat-feature-windows-10-powershell/
