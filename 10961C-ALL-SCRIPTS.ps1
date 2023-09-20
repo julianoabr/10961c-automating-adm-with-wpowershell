@@ -1,4 +1,4 @@
-﻿#10961C - Automating Administration with Windows PowerShell
+#10961C - Automating Administration with Windows PowerShell
 
 #Module 1: Getting started with Windows PowerShell
 
@@ -245,10 +245,119 @@ Get-Alias | Where-Object -FilterScript {$_.ReferencedCommand -like "Get-ChildIte
 
 #Using Show-Command
 
+Show-Command –Name Get-ADUser
+
+Show-Command Get-ADUser
+
+#Question: What is the difference between Get-Help and Get-Command? Why might they return different results for the same query?
+
+#Get-Help shows examples of a Command. Shows the parameters of a Command and Online Help about a Command. 
+#Get-Command open a window where you can put parameters
 
 
+#Lab B: Finding and running basic commands
 
-##########STOPPED ON PAGE 50
+#On LON-CL1, ensure that you are signed in as Adatum\Administrator and determine answers to the following questions:
+
+#What command would you run to resolve a DNS name?
+
+$computerName = (Get-ComputerInfo -Property Cscaption).CsCaption
+
+Resolve-DnsName -Name $computerName
+
+#What command would you run to make changes to a network adapter? After finding such a command, what parameter would you use to change its MAC address (on adapters that support changes to their MAC address)?
+
+Set-NetAdapter –Name "Ethernet 1" -MacAddress "00-10-18-57-1B-0D"
+
+#What command would let you enable a previously disabled scheduled task?
+
+Get-ScheduledTask -TaskPath "\UpdateTasks\" | Enable-ScheduledTask
+
+Enable-ScheduledTask -TaskName "SystemScan"
+
+#What command would let you block access to a file share by a particular user?
+
+Block-FileShareAccess -Name "VMFiles" -AccountName "Contoso\Guest"
+
+#What command would you run to clear your computer’s local BranchCache cache?
+
+Clear-BCCache -Confirm:$false -Verbose
+
+#What command would you run to display a list of Windows Firewall rules? What parameter of that command would display only enabled rules?
+
+Get-NetFirewallRule
+
+Get-NetFirewallRule  | Where-Object -FilterScript {$PSItem.Enabled -eq $True}
+
+#What command would you run to display a list of all locally bound IP addresses?
+
+Get-NetIPAddress | Select-Object -Property IPAddress, InterfaceIndex, InterfaceAlias
+
+#What command would you run to suspend an active print job in a print queue?
+
+$PrintJob = Get-PrintJob -PrinterName "PrinterName" -ID 1 
+Suspend-PrintJob -InputObject $printJob
+
+#What native Windows PowerShell command would you run to read the content of a text file?
+
+
+Get-content .\temp06072022.txt
+
+
+<#Exercise 2: Running commands
+Scenario
+In this exercise, you will run several basic Windows PowerShell commands. In some instances, you might
+have to find the commands that you will use to complete the task.
+The main task for this exercise is as follows:
+
+1. Run commands to accomplish specified tasks.
+
+#>
+
+
+#Task 1: Run commands to accomplish specified tasks
+
+#1. Ensure you are signed in on the LON-CL1 virtual machine as Adatum\Administrator.
+
+whoami
+
+Get-WmiObject -Class Win32_ComputerSystem | Select-Object -Property Username
+
+Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -Property UserName,Caption
+
+#2. Display a list of enabled Windows Firewall rules.
+
+Get-NetFirewallRule -Enabled True
+
+
+#3. Display a list of all local IPv4 addresses.
+
+Get-NetIPAddress | Select-Object -Property InterfaceAlias, InterfaceIndex, IPAddress
+
+
+#4. Set the startup type of the BITS service to Automatic:
+
+get-service -Name BITS | Set-Service -StartupType Automatic
+
+#a. Open the Computer Management console and go to Services and Applications.
+
+compmgmt.msc
+
+
+#b. Locate the Background Intelligence Transfer Service (BITS) and note its startup type setting prior to and after changing the startup type in Windows PowerShell.
+
+
+#5. Test the network connection to LON-DC1. Your command should return only a True or False value, without any other output.
+
+(Test-NetConnection -ComputerName LON-DC1 -Verbose).PingSucceeded
+
+
+#6. Display the newest 10 entries from the local Security event log.
+
+Get-EventLog -LogName Security -Newest 10
+
+
+##########STOPPED ON PAGE 53
 
 
 
@@ -1004,12 +1113,11 @@ Get-ADUser -Identity Neomatrix -Properties Memberof | Select-Object -ExpandPrope
 
 
 #3. Run a command that uses a parenthetical command to display a list of services from every computer in the domain.
-4. Run a command that shows the kind of object that is produced when you retrieve information about
-every computer account in the domain.
-5. Review the Help for Get-Service to see what kind of object its –ComputerName parameter expects.
-6. Run a command that selects only the Name property of every computer in the domain.
-7. Run a command that shows the kind of object that the previous command produced.
-8. Run a command that extracts the contents of the Name property of every computer in the domain.
-9. Run a command that shows the kind of object that the previous command produced.
-10. Modify the command in step 3 to use the command in step 8 as the parenthetical command.
-11. Run the command that you created in step 10.
+#4. Run a command that shows the kind of object that is produced when you retrieve information about every computer account in the domain.
+#5. Review the Help for Get-Service to see what kind of object its –ComputerName parameter expects.
+#6. Run a command that selects only the Name property of every computer in the domain.
+#7. Run a command that shows the kind of object that the previous command produced.
+#8. Run a command that extracts the contents of the Name property of every computer in the domain.
+#9. Run a command that shows the kind of object that the previous command produced.
+#10. Modify the command in step 3 to use the command in step 8 as the parenthetical command.
+#11. Run the command that you created in step 10.
