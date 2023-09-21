@@ -12,7 +12,6 @@ $psversiontable.psversion
 
 #Lab A: Configuring Windows PowerShell
 
-
 #Lesson 2 Understanding command syntax
 
 Get-Item
@@ -20,7 +19,6 @@ Get-Item
 Get-ChildItem C:\
 
 Get-ChildItem -Path C:\
-
 
 Get-ChildItem -Path C:\ -Recurse -Verbose
 
@@ -65,10 +63,10 @@ Get-Help About*
 Get-help About_Hidden -ShowWindow
 
 
-#Demonstration: Viewing help
-
+#Demonstration: Viewing help (PAGE 41)
 
 #Demonstration Steps
+
 #1. Display basic help for a command.
 
 Get-Help -Name Get-UcsAaaOrg
@@ -87,7 +85,6 @@ Get-Help -Name Remove-ADComputerServiceAccount -Online
 
 #It redirects to: https://learn.microsoft.com/en-us/powershell/module/activedirectory/remove-adcomputerserviceaccount?view=winserver2012r2-ps&redirectedfrom=MSDN
 
-
 Get-EventLog -LogName Application
 
 Get-EventLog Application
@@ -95,7 +92,7 @@ Get-EventLog Application
 Get-EventLog –LogName Application –ComputerName LON-CL1,LON-DC1
 
 
-#Demonstration: Using About files
+#Demonstration: Using About files (PAGE 45)
 
 <#
 
@@ -153,9 +150,20 @@ Get-Help -Name Add-Computer -ShowWindow
 Add-Computer -ComputerName LON-CL2,LON-CL3,LON-CL4
 
 
+<#
+PAGE 46
+In Windows PowerShell version 3.0 and newer, modules autoload if you run a cmdlet that is not currently
+loaded. This works if the module that contains the cmdlet is in a folder under the module load paths. By
+default, these are %systemdir%\WindowsPowerShell\v1.0\Modules and %userprofiles%\Documents
+\WindowsPowerShell\Modules. Within Windows PowerShell, these pThe Get-Help command uses
+autoloading when searching for help topics. The Get-Command command also uses autoloading.
+
+#>
+
+
 #LESSON 3 - Finding Commands
 
-
+#Demonstration: Viewing modules (PAGE 47)
 <#
 
 Demonstration Steps
@@ -191,7 +199,9 @@ Import-Module -Name ServerManager -Verbose
 
 <#
 
-Demonstration: Searching for cmdlets
+Demonstration: Searching for cmdlets (PAGE 49)
+
+
 In this demonstration, you will see how to use several techniques to discover new cmdlets.
 Demonstration Steps
 1. Show a list of commands that deal with IPv4 addresses.
@@ -212,7 +222,10 @@ Get-Command -Name *EventLog* -ArgumentList "ComputerName"
 
 #ALIASES
 
+#Demonstration: Using aliases (PAGE 50)
+
 #Demonstration Steps
+
 #1. Run the dir and Get-ChildItem commands, and then compare the results.
 
 dir
@@ -255,7 +268,7 @@ Show-Command Get-ADUser
 #Get-Command open a window where you can put parameters
 
 
-#Lab B: Finding and running basic commands
+#Lab B: Finding and running basic commands (PAGE 52)
 
 #On LON-CL1, ensure that you are signed in as Adatum\Administrator and determine answers to the following questions:
 
@@ -300,7 +313,6 @@ Suspend-PrintJob -InputObject $printJob
 
 #What native Windows PowerShell command would you run to read the content of a text file?
 
-
 Get-content .\temp06072022.txt
 
 
@@ -314,8 +326,7 @@ The main task for this exercise is as follows:
 
 #>
 
-
-#Task 1: Run commands to accomplish specified tasks
+#Task 1: Run commands to accomplish specified tasks (PAGE 53)
 
 #1. Ensure you are signed in on the LON-CL1 virtual machine as Adatum\Administrator.
 
@@ -328,7 +339,6 @@ Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -Property UserNa
 #2. Display a list of enabled Windows Firewall rules.
 
 Get-NetFirewallRule -Enabled True
-
 
 #3. Display a list of all local IPv4 addresses.
 
@@ -357,21 +367,53 @@ compmgmt.msc
 Get-EventLog -LogName Security -Newest 10
 
 
-##########STOPPED ON PAGE 53
+#Exercise 3: Using About files (PAGE 54)
+
+<#
+
+Scenario
+In this exercise, you will use help discovery techniques to find content in About files, and then use that
+content to answer questions about global Windows PowerShell functionality.
+Words in italic are clues. Remember that you must use Get-Help and wildcard characters. Because About
+files are not commands, Get-Command will not be useful in this exercise.
+The main tasks for this exercise are as follows:
+1. Locate and read About help files.
+2. Prepare for the next module.
+
+
+#>
+
+#Task 1: Locate and read About help files
+#Ensure that you are still signed in to LON-CL1 as Adatum\Administrator from the previous exercise,and answer the following questions:
+#What comparison operator does Windows PowerShell use for wildcard string comparisons?
+
+Get-help about_comparison_operators -ShowWindow
+
+#Are Windows PowerShell comparison operators typically case-sensitive?
 
 
 
+#How would you use $Env to display the COMPUTERNAME environment variable?
+#What external command could you use to create a self-signed digital certificate that is usable for signing Windows PowerShell scripts?
 
 
 <#
 
-In Windows PowerShell version 3.0 and newer, modules autoload if you run a cmdlet that is not currently
-loaded. This works if the module that contains the cmdlet is in a folder under the module load paths. By
-default, these are %systemdir%\WindowsPowerShell\v1.0\Modules and %userprofiles%\Documents
-\WindowsPowerShell\Modules. Within Windows PowerShell, these pThe Get-Help command uses
-autoloading when searching for help topics. The Get-Command command also uses autoloading.
+Module 2
+Cmdlets for administration
+Contents:
+Module Overview 2-1
+Lesson 1: Active Directory administration cmdlets 2-2
+Lesson 2: Network configuration cmdlets 2-13
+Lesson 3: Other server administration cmdlets 2-19
+Lab: Windows administration 2-24
+Module Review and Takeaways 2-28
 
 #>
+
+
+##########STOPPED ON PAGE 56#########################
+
 
 #RSAT ON WINDOWS 10
 #http://woshub.com/install-rsat-feature-windows-10-powershell/
