@@ -213,12 +213,21 @@ read event logs from a remote computer in addition to the local one.
 #1
 Get-Command -Name *IPv4*
 
+Get-Command -noun *ipv4*
+
+Get-Command -Module NetAdapter
+
 #2
+
+Get-Command -Noun event* -Verb Get
+
+Get-Command -Name *event*
 
 Get-Command -Noun *EventLog*
 
 Get-Command -Name *EventLog* -ArgumentList "ComputerName"
 
+Get-Command -Name *event* -ParameterName *Computer*
 
 #ALIASES
 
@@ -235,11 +244,15 @@ Get-ChildItem
 
 #2. View the definition for the dir alias.
 
+Get-Alias di*
+
 Get-Alias -Name dir -Verbose
 
 #3. Create a new alias, list, for the Get-ChildItem command.
 
 Get-Help New-Alias -ShowWindow
+
+new-alias -Name 'list' -Value get-childitem -Description 'list files in a folder' 
 
 New-Alias -Name "List" Get-ChildItem
 
@@ -251,6 +264,8 @@ List
 
 Get-Alias -Name List
 
+get-alias | Where-Object -FilterScript {$psitem.ReferencedCommand -like 'Get-ChildItem'}
+
 #6. Show the various aliases for Get-ChildItem.
 
 Get-Alias | Where-Object -FilterScript {$_.ReferencedCommand -like "Get-ChildItem"}
@@ -261,6 +276,8 @@ Get-Alias | Where-Object -FilterScript {$_.ReferencedCommand -like "Get-ChildIte
 Show-Command –Name Get-ADUser
 
 Show-Command Get-ADUser
+
+Show-Command -Name new-alias
 
 #Question: What is the difference between Get-Help and Get-Command? Why might they return different results for the same query?
 
@@ -278,9 +295,15 @@ $computerName = (Get-ComputerInfo -Property Cscaption).CsCaption
 
 Resolve-DnsName -Name $computerName
 
+(Resolve-DnsName -Name server.domain).IPAddress
+
 #What command would you run to make changes to a network adapter? After finding such a command, what parameter would you use to change its MAC address (on adapters that support changes to their MAC address)?
+#https://docs.microsoft.com/en-us/powershell/module/netadapter/set-netadapter?view=win10-ps
+
+Get-Command -Noun *adapter*
 
 Set-NetAdapter –Name "Ethernet 1" -MacAddress "00-10-18-57-1B-0D"
+
 
 #What command would let you enable a previously disabled scheduled task?
 
@@ -288,15 +311,23 @@ Get-ScheduledTask -TaskPath "\UpdateTasks\" | Enable-ScheduledTask
 
 Enable-ScheduledTask -TaskName "SystemScan"
 
+Get-ScheduledTask | Where-Object -FilterScript {$_.TaskName -like '*Windows 2000*'} | Enable-ScheduledTask -Verbose
+
 #What command would let you block access to a file share by a particular user?
+
+Get-Command -Noun *share*
 
 Block-FileShareAccess -Name "VMFiles" -AccountName "Contoso\Guest"
 
 #What command would you run to clear your computer’s local BranchCache cache?
 
+Get-Command -Noun *cache*
+
 Clear-BCCache -Confirm:$false -Verbose
 
 #What command would you run to display a list of Windows Firewall rules? What parameter of that command would display only enabled rules?
+
+get-command -Noun *firewall*
 
 Get-NetFirewallRule
 
@@ -308,7 +339,10 @@ Get-NetIPAddress | Select-Object -Property IPAddress, InterfaceIndex, InterfaceA
 
 #What command would you run to suspend an active print job in a print queue?
 
+Get-Command -Noun *print*
+
 $PrintJob = Get-PrintJob -PrinterName "PrinterName" -ID 1 
+
 Suspend-PrintJob -InputObject $printJob
 
 #What native Windows PowerShell command would you run to read the content of a text file?
@@ -346,6 +380,12 @@ Get-NetIPAddress | Select-Object -Property InterfaceAlias, InterfaceIndex, IPAdd
 
 
 #4. Set the startup type of the BITS service to Automatic:
+
+$svcToAlterStartType = Get-service -Name BITS 
+
+$svcStartType = $svcToAlterStartType.StartType
+ 
+Get-service -Name Audiosrv | Set-Service -StartupType $svcStartType #get a service with automatic startup type and change another service
 
 get-service -Name BITS | Set-Service -StartupType Automatic
 
@@ -391,11 +431,22 @@ Get-help about_comparison_operators -ShowWindow
 
 #Are Windows PowerShell comparison operators typically case-sensitive?
 
-
+<#No. By default, all comparison operators are case-insensitive. To make a
+comparison operator case-sensitive, add a c after the -. For example, -ceq
+is the case-sensitive version of -eq. To make the case-insensitivity
+explicit, add an i before -. For example, -ieq is the explicitly
+case-insensitive version of -eq.
+#>
 
 #How would you use $Env to display the COMPUTERNAME environment variable?
+
+$env:Computername
+
 #What external command could you use to create a self-signed digital certificate that is usable for signing Windows PowerShell scripts?
 
+New-SelfSignedCertificate
+
+makecert #to create self signed certificates
 
 <#
 
@@ -412,145 +463,147 @@ Module Review and Takeaways 2-28
 #>
 
 
-##########STOPPED ON PAGE 56#########################
-
-
-#RSAT ON WINDOWS 10
-#http://woshub.com/install-rsat-feature-windows-10-powershell/
-
-Get-WindowsCapability -Name RSAT* -Online | Select-Object -Property DisplayName, State
-
-Add-WindowsCapability –online –Name “Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0”
-
-Add-WindowsCapability –online –Name “Rsat.Dns.Tools~~~~0.0.1.0”
-
-Add-WindowsCapability -Online -Name Rsat.FileServices.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.GroupPolicy.Management.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.IPAM.Client.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.LLDP.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.NetworkController.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.NetworkLoadBalancing.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.BitLocker.Recovery.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.CertificateServices.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.DHCP.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.FailoverCluster.Management.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.RemoteAccess.Management.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.RemoteDesktop.Services.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.ServerManager.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.Shielded.VM.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.StorageMigrationService.Management.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.StorageReplica.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.SystemInsights.Management.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.VolumeActivation.Tools~~~~0.0.1.0
-Add-WindowsCapability -Online -Name Rsat.WSUS.Tools~~~~0.0.1.0
-
-
-#To install all the available RSAT tools at once, run:
-
-Get-WindowsCapability -Name RSAT* -Online | Add-WindowsCapability –Online
-
-#To install only disabled RSAT components, run:
-
-Get-WindowsCapability -Online |? {$_.Name -like "*RSAT*" -and $_.State -eq "NotPresent"} | Add-WindowsCapability -Online
-
-
-#https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/get-command?view=powershell-7.1
-Get-Command -Name *event*
-
-Get-Command -Noun event* -Verb Get
-
-Get-Command -Module NetAdapter
-
-Get-Command -noun *ipv4*
-
-Get-Command -Name *event* -ParameterName *Computer*
-
-Get-Alias di*
-
-new-alias -Name 'list' -Value get-childitem -Description 'list files in a folder' 
-
-
-get-alias | Where-Object -FilterScript {$psitem.ReferencedCommand -like 'Get-ChildItem'}
-
-Show-Command -Name new-alias
-
-get-command -Noun *dns*
-
-
-#What command would you run to resolve a DNS name?
-
-(Resolve-DnsName -Name TBAMBEV-VVM0221).IPAddress
-
-#What command would you run to make changes to a network adapter? After finding such a
-#command, what parameter would you use to change its MAC address (on adapters that support
-#changes to their MAC address)?
-
-Get-Command -Noun *adapter*
-
-
-#https://docs.microsoft.com/en-us/powershell/module/netadapter/set-netadapter?view=win10-ps
-
-Set-NetAdapter -Name "Ethernet 1" -MacAddress "00-10-18-57-1B-0D"
-
-#What command would let you enable a previously disabled scheduled task?
-
-Get-ScheduledTask | Where-Object -FilterScript {$_.TaskName -like '*Windows 2000*'} | Enable-ScheduledTask -Verbose
-
-#What command would let you block access to a file share by a particular user?
-
-Get-Command -Noun *share*
-
-Revoke-SmbShareAccess -Name ClusterLog$ -AccountName "brdiv0346" -Force
-
-#What command would you run to clear your computer’s local BranchCache cache?
-
-Get-Command -Noun *cache*
-
-Clear-BCCache -Force -Verbose
-
-#What command would you run to display a list of Windows Firewall rules? What parameter of that command would display only enabled rules?
-
-get-command -Noun *firewall*
-
-Get-NetFirewallRule
-
-Get-NetFirewallRule | Where-Object -FilterScript {$PSItem.Enabled -eq $True}
-
-#What command would you run to display a list of all locally bound IP addresses?
-
-Get-NetIPAddress
-
-#What command would you run to suspend an active print job in a print queue?
-
-Get-Command -Noun *print*
-
-$Printer = Get-Printer -Name "PrinterName" 
-Suspend-PrintJob -PrinterObject $Printer -ID 1
-
-#What native Windows PowerShell command would you run to read the content of a text file?
-
-get-content -Path C:\temp\cert.txt
-
-
-$svcToAlterStartType = Get-service -Name BITS 
-
-$svcStartType = $svcToAlterStartType.StartType
-
-
-get-help about_Signing
-
-makecert #to create self signed certificates
-
-
+<#For example, you can retrieve the default set of properties along with the department and email address
+of a user with the SAM account janedoe by typing the following command in the console, and then
+pressing Enter:
+#>
 Get-ADUser -Identity janedoe -Properties Department,EmailAddress
+
+<#
+
+The other way to specify a user or users is with the -Filter parameter. The -Filter parameter accepts a query
+based on regular expressions, which later modules in this course cover in more detail. For example, to
+retrieve all AD DS users and their properties, type the following command in the console, and then press
+Enter:
+
+#>
 
 Get-ADUser -Filter * -Properties *
 
-New-ADUser "Jane Doe" -Department IT
 
+#To create a new group named FileServerAdmins, type the following command in the console, and then press Enter:
 New-ADGroup -Name FileServerAdmins -GroupScope Global
 
+
+<#Create a new global group in the IT department
+1. On LON-CL1, start a Windows PowerShell session with elevated permissions.
+2. Run the following command:
+#>
+
+New-ADGroup -Name HelpDesk -Path "ou=IT,dc=Adatum,dc=com" –GroupScope Global
+
+#Create a new user in the IT department
+New-ADUser -Name “Jane Doe” -Department “IT”
+
+#Add two users from the IT department to the HelpDesk group
+Add-ADGroupMember “HelpDesk” -Members “Lara”,”Jane Doe”
+
+#Set the address for a HelpDesk group user
+Get-ADGroupMember HelpDesk
+
+Set-ADUser Lara -StreetAddress "1530 Nowhere Ave." -City "Winnipeg" -State "Manitoba" -Country "CA"
+
+#Verify the group membership for the new user
+
+Get-ADPrincipalGroupMembership “Jane Doe” 
+
+#Verify the updated user properties
+Get-ADUser Lara -Properties StreetAddress,City,State,Country
+
+#The following is an example of a command that you can use to create a computer account:
 New-ADComputer -Name LON-CL10 -Path "ou=marketing,dc=adatum,dc=com" -Enabled $true
+
+
+#The following is an example of a command to create a new OU:
+New-ADOrganizationalUnit -Name Sales -Path "ou=marketing,dc=adatum,dc=com" -ProtectedFromAccidentalDeletion $true
+
+
+#The following command creates a new contact object:
+New-ADObject -Name "JohnSmithcontact" -Type contact
+
+
+#Create an Active Directory contact object that has no dedicated cmdlets
+New-ADObject -Name JohnSmithcontact -Type contact -DisplayName “John Smith(Contoso.com)”
+
+
+#Verify the creation of the contact
+Get-ADObject -Filter 'ObjectClass -eq "contact"'
+
+#Manage user properties by using Active Directory object cmdlets
+Set-ADObject -Identity “CN=Lara Raisic,OU=IT,DC=Adatum,DC=com" -Description “Member of support team”
+
+
+#Verify the property changes
+
+Get-ADUser Lara -Properties Description
+
+#Change the name of the HelpDesk group to SupportTeam
+
+Rename-ADObject -Identity “CN=HelpDesk,OU=IT,DC=Adatum,DC=com” -NewName SupportTeam
+
+#Verify the HelpDesk group name change
+
+Get-ADGroup HelpDesk
+
+
+<#
+
+Which of the following cmdlet verbs is not associated with the ADUser noun?
+Select the correct answer.
+Get
+X Update (THE ONLY VERB THAT DOES NOT APPEAR
+New
+Remove
+Set
+
+#>
+
+Get-Command -Noun *Aduser*
+
+#The default value for the -ProtectedFromAccidentalDeletion parameter of New-ADOrganizationalUnit is $true. (OK)
+
+#Run the command
+
+Get-help New-ADOrganizationalUnit -ShowWindow
+
+#You will view the following info
+
+<#
+
+-ProtectedFromAccidentalDeletion <Boolean>
+        Specifies whether to prevent the object from being deleted. When this property is set to true, you cannot delete the corresponding object without changing the value of the property. Possible values for this parameter include:
+        
+
+        Required?                    false
+        Position?                    named
+        Default value                $true
+        Accept pipeline input?       True (ByPropertyName)
+        Accept wildcard characters?  false
+
+
+#>
+
+
+
+
+
+
+
+
+
+
+##################################STOPPED ON PAGE 67#######################################
+
+
+
+
+
+
+
+
+
+
+
 
 New-ADOrganizationalUnit -Name Sales -Path "ou=marketing,dc=adatum,dc=com" -ProtectedFromAccidentalDeletion $true
 
@@ -587,39 +640,8 @@ Enable-NetFirewallRule -DisplayGroup “Remote Access”
 
 Set-NetFirewallRule -DisplayGroup “Remote Access” -Enabled True
 
-<#
-
-Cmdlet Description
-New-NetIPAddress Creates a new IP address
-Get-NetIPAddress Displays properties of an IP address
-Set-NetIPAddress Modifies properties of an IP address
-Remove-NetIPAddress Deletes an IP address
-
-New-NetRoute Creates an entry in the IP routing table
-Get-NetRoute Retrieves an entry from the IP routing table
-Set-NetRoute Modifies properties of an entry in the IP routing table
-Remove-NetRoute Deletes an entry from the IP routing table
-Find-NetRoute Identifies the best local IP address and route to reach a remote address
 
 
-Get-DnsClient Gets details about a network interface
-Set-DnsClient Sets DNS client configuration settings for a network interface
-Get-DnsClientServerAddress Gets the DNS server address settings for a network interface
-Set-DnsClientServerAddress Sets the DNS server address for a network interface
-
-New-NetFirewallRule Creates a new firewall rule
-Set-NetFirewallRule Sets properties for a firewall rule
-Get-NetFirewallRule Gets properties for a firewall rule
-Remove-NetFirewallRule Deletes a firewall rule
-Rename-NetFirewallRule Renames a firewall rule
-Copy-NetFirewallRule Makes a copy of a firewall rule
-Enable-NetFirewallRule Enables a firewall rule
-Disable-NetFirewallRule Disables a firewall rule
-Get-NetFirewallProfile Gets properties for a firewall profile
-Set-NetFirewallProfile Sets properties for a firewall profile
-
-
-#>
 
 New-NetIPAddress -InterfaceAlias Ethernet -IPAddress 172.16.0.30 -PrefixLength 16
 
@@ -1151,10 +1173,13 @@ Get-ADUser -Identity Neomatrix -Properties Memberof | Select-Object -ExpandPrope
 #1. Open the Windows PowerShell Integrated Scripting Environment (ISE).
 #2. Run a command that will list all computers in the domain.
 
-
+Get-ADComputer -Filter *
 
 
 #3. Run a command that uses a parenthetical command to display a list of services from every computer in the domain.
+
+
+
 #4. Run a command that shows the kind of object that is produced when you retrieve information about every computer account in the domain.
 #5. Review the Help for Get-Service to see what kind of object its –ComputerName parameter expects.
 #6. Run a command that selects only the Name property of every computer in the domain.
