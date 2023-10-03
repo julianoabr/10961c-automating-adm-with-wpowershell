@@ -583,83 +583,79 @@ Get-help New-ADOrganizationalUnit -ShowWindow
 
 #>
 
-
-
-
-
-
-
-
-
-
-##################################STOPPED ON PAGE 67#######################################
-
-
-
-
-
-
-
-
-
-
-
-
-New-ADOrganizationalUnit -Name Sales -Path "ou=marketing,dc=adatum,dc=com" -ProtectedFromAccidentalDeletion $true
-
-
-New-ADObject -Name JohnSmithcontact -Type contact -DisplayName “John Smith (Contoso.com)”
-
-Get-ADObject -Filter ‘ObjectClass -eq “contact”’
-
-Set-ADObject -Identity “CN=Lara Raisic,OU=IT,DC=Adatum,DC=com" -Description “Member of support team”
-
-Get-ADUser Lara -Properties Description
-
-Rename-ADObject -Identity “CN=HelpDesk,OU=IT,DC=Adatum,DC=com” -NewName SupportTeam
-
-Get-ADGroup HelpDesk
-
-#qual dos verbos a seguir não está associado com aduser - get, update, new, remote, set
-Get-Command -Noun *aduser*
-
 #The default value for the -ProtectedFromAccidentalDeletion parameter of New-ADOrganizationalUnit is $true.
 $item = (get-help -Name New-ADOrganizationalUnit -Parameter 'ProtectedFromAccidentalDeletion')
 
 $item.defaultValue
 
-#LESSON 2 - NETWORK CMDLETS
 
+#The following command creates a new IP address on the Ethernet interface:
 New-NetIPAddress -IPAddress 192.168.1.10 -InterfaceAlias “Ethernet” -PrefixLength 24 -DefaultGateway 192.168.1.1
 
+#The following command creates an IP routing table entry:
 New-NetRoute -DestinationPrefix 0.0.0.0/24 -InterfaceAlias “Ethernet” -DefaultGateway 192.168.1.1
 
+
+#The following command sets the connection-specific suffix for an interface:
 Set-DnsClient -InterfaceAlias Ethernet -ConnectionSpecificSuffix “adatum.com”
 
+# The following commands both enable firewall rules in the group Remote Access:
 Enable-NetFirewallRule -DisplayGroup “Remote Access”
 
 Set-NetFirewallRule -DisplayGroup “Remote Access” -Enabled True
 
 
+#Run the following command:
+Test-Connection LON-DC1
 
-
+#Change the client IP address
 New-NetIPAddress -InterfaceAlias Ethernet -IPAddress 172.16.0.30 -PrefixLength 16
 
 Remove-NetIPAddress -InterfaceAlias Ethernet -IPAddress 172.16.0.40
 
+#Change the DNS server for LON-CL1
 Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddress 172.16.0.11
 
+
+#Change the default gateway for LON-CL1
 Remove-NetRoute -InterfaceAlias Ethernet -DestinationPrefix 0.0.0.0/0
 
 New-NetRoute -InterfaceAlias Ethernet -DestinationPrefix 0.0.0.0/0 -NextHop 172.16.0.2
 
+#Confirm the network configuration changes
+
 Get-NetIPConfiguration
+
+#Test the effect of the changes
+
+Test-Connection LON-DC1
 
 #Question: Which two parameters can you use with *-NetIPAddress cmdlets to identify a network interface?
 
 Get-Help Get-NetIPAddress -Parameter InterfaceAlias
 
 Get-Help Get-NetIPAddress -Parameter InterfaceIndex
+
+
+#Lesson 3
+#Other server administration cmdlets
+
+#Group Policy management cmdlets
+
+#The following command creates a new GPO from a starter GPO:
+
+New-GPO -Name “IT Team GPO” -StarterGPOName “IT Starter GPO”
+
+#The following command links the new GPO to an AD DS container:
+
+New-GPLink -Name “IT Team GPO” -Target “OU=IT,DC=adatum,DC=com”
+
+
+#Server Manager cmdlets
+
+
+#The following command installs network load balancing on the local server:
+Install-WindowsFeature “nlb”
 
 
 #HYPER-V CMDLETS
@@ -678,8 +674,11 @@ Import-VM Imports a VM from a file
 Export-VM Exports a VM to a file
 Checkpoint-VM Creates a checkpoint of a VM
 
-
 #>
+
+#You can install the Hyper-V module from within Windows PowerShell by installing the Windows feature. To do so, type the following command in the console, and then press Enter:
+
+Enable-WindowsOptionalFeature -Feature Microsoft-Hyper-V-Management-PowerShell -Online
 
 
 #IIS CMDLETS
@@ -698,6 +697,52 @@ New-WebAppPool Creates a new web application pool
 Restart-WebAppPool Restarts a web application pool
 
 #>
+
+#To create a new IIS website, type the following command in the console, and then press Enter:
+New-WebSite “London” -PhysicalPath C:\inetpub\wwwroot\london -IPaddress 172.16.0.15 -ApplicationPool LondonAppPool
+
+
+<#Note: The WebAdministration module represents IIS as a PSDrive, which you can navigate
+by using the Set-Location IIS:\ command. This allows you to navigate the IIS structure by using
+cmdlets such as Get-ChildItem. You will learn more about PSDrives in Module 5, “Using
+PSProviders and PSDrives.”
+#>
+
+#Question: What Windows feature must you install before you can use Hyper-V cmdlets?
+
+Get-WindowsFeature -Name *Hyper*
+
+Install-WindowsFeature -Name Hyper-V -IncludeAllSubFeature -IncludeManagementTools -LogPath  "$env:SystemDrive\Temp\LogInstallHyper-V.txt" -Verbose
+
+
+#Task 1: Create a new organizational unit (OU) for a branch office
+
+
+
+##################################STOPPED ON PAGE 80#######################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #Working with the Windows PowerShell pipeline
 
