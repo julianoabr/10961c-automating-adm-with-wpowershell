@@ -714,12 +714,160 @@ Get-WindowsFeature -Name *Hyper*
 
 Install-WindowsFeature -Name Hyper-V -IncludeAllSubFeature -IncludeManagementTools -LogPath  "$env:SystemDrive\Temp\LogInstallHyper-V.txt" -Verbose
 
-
 #Task 1: Create a new organizational unit (OU) for a branch office
+New-ADOrganizationalUnit -Name "London" -Path "dc=sth,dc=local" -ProtectedFromAccidentalDeletion:$true -Verbose
+
+
+#Task 2: Create group for branch office administrators
+New-ADGroup -Name "London Admins" -Path "Ou=London,dc=sth,dc=local" -GroupCategory Security -GroupScope Global -Confirm:$false -Verbose
+
+#Task 3: Create a user and computer account for the branch office
+
+#1. In the PowerShell console, create a user account for the user Ty Carlson.
+
+$splat = @{
+    Name = 'TyCarlson'
+    DisplayName = "Ty Carlson"
+    AccountPassword = (Read-Host -AsSecureString 'AccountPassword')
+    Enabled = $true
+    Path = "ou=London,dc=sth,dc=local"
+    EmailAddress = "tycarson@sth.local"
+}
+New-ADUser @splat
 
 
 
-##################################STOPPED ON PAGE 80#######################################
+#2. Add the user to the London Admins group.
+
+Add-ADGroupMember -Identity "London Admins" -Members "TyCarlson" -Verbose
+
+#3. Create a computer account for the LON-CL2 computer.
+
+New-ADComputer -Name "LON-CL2" -Path "Ou=London,dc=sth,dc=local" -DisplayName "LON CL2" -Verbose
+
+#Task 4: Move the group, user, and computer accounts to the branch office OU
+
+Get-ADGroup -Identity "London Admins" | Move-ADObject -TargetPath "ou=Cambridge,dc=sth,dc=local" -Confirm:$false -Verbose
+
+Get-ADUser -Identity "TyCarlson" | Move-ADObject -TargetPath "ou=Cambridge,dc=sth,dc=local" -Confirm:$false -Verbose
+
+Get-ADComputer -Identity "LON-CL2" | Move-ADObject -TargetPath "ou=Cambridge,dc=sth,dc=local" -Confirm:$false -Verbose
+
+
+# Task 1: Test the network connection and view the configuration
+
+
+#1. Switch to LON-SVR1.
+#2. Open Windows PowerShell.
+#3. Test the connection to LON-DC1, and then note the speed of the test.
+
+Test-NetConnection -ComputerName LON-DC1 -Verbose
+
+#4. View the network configuration for LON-SVR1.
+
+Get-NetIPConfiguration
+
+#5. Note the IP address, default gateway, and DNS server.
+
+#Task 2: Change the server IP address
+
+#Use Windows PowerShell to change the IP address for the Ethernet network interface to 172.16.0.15/16.
+
+New-NetIPAddress -InterfaceAlias Ethernet -IPAddress 172.16.0.15 -PrefixLength 16
+
+#Task 3: Change the DNS settings and default gateway for the server
+#1. Change the DNS settings of the Ethernet network interface to point at 172.16.0.12.
+
+Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddresses 172.16.0.12
+
+#2. Change the default gateway for the Ethernet network interface to 172.16.0.2
+
+New-NetIPAddress -InterfaceAlias Ethernet -DefaultGateway 172.16.0.2
+
+#Task 4: Verify and test the changes
+#1. On LON-SVR1, verify the changes to the network configuration.
+
+Get-NetIPConfiguration
+
+#2. Test the connection to LON-DC1, and then note the difference in the test speed.
+
+Test-NetConnection -ComputerName LON-DC1 -Verbose
+
+
+#Task 1: Install IIS on the server
+#• Use Windows PowerShell to install IIS on LON-SVR1.
+
+Install-WindowsFeature -ComputerName LON-SVR1 -Name Web-Server -IncludeAllSubFeature -IncludeManagementTools -LogPath "$env:SystemDrive\Temp\InstallIISLog.log" -Confirm:$false -Verbose
+
+#Task 2: Create a folder on the server for the website files
+#• On LON-SVR1, use PowerShell to create a folder named London under C:\inetpub\wwwroot for the website files.
+
+New-Folder -Name "London" -Location "$env:SystemDrive\inetpub\wwwroot" -Confirm:$false -Verbose
+
+#Task 3: Create a new application pool for the website
+#• On LON-SVR1, use PowerShell to create an application pool for the site named LondonAppPool.
+
+#https://learn.microsoft.com/en-us/iis/manage/powershell/powershell-snap-in-creating-web-sites-web-applications-virtual-directories-and-application-pools
+
+Get-Command -Name *pool*
+
+New-WebAppPool -Name LondonAppPool
+
+New-Item IIS:\Sites\London -PhysicalPath C:\inetpub\wwwroot\London -Bindings @{protocol="https";bindingInformation=":8080:"}
+Set-ItemProperty IIS:\Sites\London -Name ApplicationPool -Value NewAppPool
+
+#Exemples from Link
+New-Item IIS:\Sites\DemoSite -physicalPath C:\DemoSite -bindings @{protocol="http";bindingInformation="172.16.0.15:8080:"}
+Set-ItemProperty IIS:\Sites\DemoSite -name applicationPool -value DemoAppPool
+New-Item IIS:\Sites\DemoSite\DemoApp -physicalPath C:\DemoSite\DemoApp -type Application
+Set-ItemProperty IIS:\sites\DemoSite\DemoApp -name applicationPool -value DemoAppPool
+New-Item IIS:\Sites\DemoSite\DemoVirtualDir1 -physicalPath C:\DemoSite\DemoVirtualDir1 -type VirtualDirectory
+New-Item IIS:\Sites\DemoSite\DemoApp\DemoVirtualDir2 -physicalPath C:\DemoSite\DemoVirtualDir2 -type VirtualDirectory
+
+<#
+
+Task 4: Create the IIS website
+1. On LON-SVR1, use PowerShell to create the IIS website by using the following configuration:
+o Name: London
+o Physical path: The folder that you created earlier
+o IP address: The current IP address of LON-SVR1
+o Application pool: LondonAppPool
+2. Open the website in Internet Explorer by using the IP address, and then verify that the site is using the
+provided settings.
+Note: Internet Explorer displays an error message. The error message details give the
+physical path of the site, which should be C:\inetpub\wwwroot\london.
+
+#>
+
+<#Common Issues and Troubleshooting Tips
+
+1. Common Issue Troubleshooting Tip
+When I run the Get-Help command for a cmdlet with the -Example parameter, I do
+not see any examples.
+
+Because the correct is "-Examples" and not "-Example"
+
+2. I update the Windows PowerShell version on my system, but a new command does
+not appear to do anything.
+
+Did you validate if command really exists and syntax is correct with Verb-Noun form?
+
+#>
+
+#Review Questions
+#Question: What command in the Windows PowerShell command-line interface can you use instead of ping.exe?
+
+Test-NetConnection
+
+#Question: Name at least two ways in which you can create an Active Directory Domain Services (AD DS) user account by using Windows PowerShell.
+
+New-ADUser
+
+New-ADObject 
+
+##########################################################MODULE 3######################################################
+
+##################################STOPPED ON PAGE 84#######################################
 
 
 
