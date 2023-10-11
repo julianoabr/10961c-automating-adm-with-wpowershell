@@ -714,6 +714,7 @@ Get-WindowsFeature -Name *Hyper*
 
 Install-WindowsFeature -Name Hyper-V -IncludeAllSubFeature -IncludeManagementTools -LogPath  "$env:SystemDrive\Temp\LogInstallHyper-V.txt" -Verbose
 
+
 #Task 1: Create a new organizational unit (OU) for a branch office
 New-ADOrganizationalUnit -Name "London" -Path "dc=sth,dc=local" -ProtectedFromAccidentalDeletion:$true -Verbose
 
@@ -867,76 +868,146 @@ New-ADObject
 
 ##########################################################MODULE 3######################################################
 
-##################################STOPPED ON PAGE 84#######################################
+
+<#
+
+Module 3
+Working with the Windows PowerShell pipeline
+Contents:
+Module Overview 3-1
+Lesson 1: Understanding the pipeline 3-2
+Lesson 2: Selecting, sorting, and measuring objects 3-8
+Lab A: Using the pipeline 3-16
+Lesson 3: Filtering objects out of the pipeline 3-19
+Lab B: Filtering objects 3-25
+Lesson 4: Enumerating objects in the pipeline 3-28
+Lab C: Enumerating objects 3-32
+Lesson 5: Sending pipeline data as output 3-34
+Lab D: Sending output to a file 3-39
+Module Review and Takeaways 3-41
+
+https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_pipelines?view=powershell-7.3
+
+#>
+
+#Demonstration: Viewing object members
+#In this demonstration, you will see how to run commands in the pipeline and how to use Get-Member. Demonstration Steps
+#1. Sign in to LON-CL1 as an administrator, and then start Windows PowerShell.
+#2. Display the members of the Service object.
+
+Get-Service | Get-Member
 
 
+#3. Display the members of the Process object.
 
+Get-Process | Get-Member
 
+#4. Display the list of members for the output of the Get-ChildItem command.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#Working with the Windows PowerShell pipeline
-
-#example below only works on powershell console
-#Get-Service ' (aspas simples) 
-
-
-Get-Service | get-member
-
-Get-Process | get-member
+Get-Member -InputObject (Get-ChildItem)
 
 Get-ChildItem -Path C:\TEMP | get-member
 
+$tmpOutput = Get-ChildItem -Path .\
+
+$tmpOutput | Get-Member
+
+
+#5. Display the list of members for the output of the Get-ADUser command
+
+
 Get-ADUser -identity jaribeiro | get-member
+
+
+#6. Display the list of members for the output of the Get-ADUser command, displaying all members.
 
 Get-aduser -Filter * | get-member
 
-Get-Process | Format-List
+#Demonstration: Formatting pipeline output
+#In this demonstration, you will see how to format pipeline output.
 
-Get-process | Format-Table -Wrap
+#1. Display the services running on LON-CL1 by using the default output format.
 
-Get-ADObject -filter * -Properties * | ft -Property Name, ObjectClass, Description -AutoSize -Wrap
+Get-Service
 
-Get-GPO -all | Format-Wide -Property DisplayName -Column 3
+#2. Display the names and statuses of the services running on LON-CL1 in a simple list.
 
-Get-ADComputer -Filter * -Properties * | Select-Object -Property Name,OperatingSystem | Format-List
+Get-Service | Format-List
 
-Get-Service | Sort-Object –Property Name –Descending
-Get-Service | Sort Name –Desc
-Get-Service | Sort Status,Name
+#3. Display a list of the computers in the current domain, including the operating systems, by using the default output format.
 
-Get-Service | Sort-Object Status,Name | Format-Wide -GroupBy Status
+$adPC = Get-ADComputer -Filter * -Properties *
 
-Get-Process
+
+#4. Display a table that contains only the names and operating systems for all the computers in the current domain.
+
+Get-ADComputer -Filter * -Properties * | Select-Object -Property Name, OperatingSystem | Format-Table -AutoSize
+
+#5. Display a list of all the Active Directory users in the current domain.
+
+Get-ADUser -Filter *
+
+#6. Display the user names of all the Active Directory users in the current domain. Display the list in a multicolumn format, and let Windows PowerShell decide the number of columns.
+
+Get-ADUser -Filter * | Format-Wide -Property Name
+
+
+<#
+
+Verify the correctness of the statement by placing a mark in the column to the right.
+Statement Answer
+The Format-Wide cmdlet accepts the -AutoSize and -Wrap parameters.
+
+Autosize equals TRUE
+Wrap equals FALSE
+
+#>
+
+#Demonstration: Sorting objects
+#In this demonstration, you will see how to sort objects by using the Sort-Object command.
+#Demonstration Steps
+#1. Display a list of processes.
+
+Get-Process | Select-Object -Property Name | Format-List
+
+#2. Display a list of processes sorted by process ID.
 
 Get-Process | Sort-Object -Property ID
 
+#3. Display a list of services sorted by status.
+
 Get-Service | Sort-Object -Property Status
+
+#4. Display a list of services sorted in reverse order by status.
 
 Get-Service | Sort-Object -Property Status -Descending
 
-Get-EventLog -LogName Security -Newest 30 | Sort-Object -Property TimeWritten
+#5. Display a list of the 10 most recent Security event log entries that is sorted with the newest entry first.
 
-Get-EventLog -LogName Security -Newest 20 | Sort-Object -Property TimeWritten -Descending
+Get-EventLog -LogName Security -Newest 10 | Sort-Object -Property TimeWritten
+
+#6. Display a list of the 10 most recent Security event log entries that is sorted with the oldest entry first, and then clear the event log.
+
+Get-EventLog -LogName Security -Newest 10 | Sort-Object -Property TimeWritten -Descending
+
+Clear-EventLog -LogName Security -Confirm:$false -Verbose
+
+#7. Display the user names of all Active Directory users in wide format and sorted by surname.
 
 Get-ADUser -Filter * | Sort-Object -Property surname | Format-Wide
+
+##################################STOPPED ON PAGE 93 #########################################
+
+
+
+
+
+
+
+
+
+
+
 
 Get-ADUser -Filter * | Select-Object -Property SamAccountName,Surname | Sort-Object -Property Surname | Format-Wide -Column 2
 
