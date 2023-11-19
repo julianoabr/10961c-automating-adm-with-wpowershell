@@ -1081,7 +1081,13 @@ see how those calculated properties behave like regular properties
 
 #>
 
+Get-ADUser -Filter * -Properties * | Select-Object -Property @{n='Account';e={$PSItem.SamAccountName}},@{label='Date Created';expression={$psitem.WhenCreated}}
 
+Get-ADUser -Filter * -Properties * | Select-Object -Property @{n='Account';e={$PSItem.SamAccountName}},@{label='Date Created';expression={$psitem.WhenCreated}} | Sort-Object -Property 'Date Created' -Descending
+
+Get-ADUser -Filter * -Properties Name,Created | Select-Object -Property Name,@{n="CreatedDays";e={(New-TimeSpan -Start (Get-Date) -End $_.Created).Days}} #without ABS
+
+Get-ADUser -Filter * -Properties Name,Created | Select-Object -Property Name,@{n="CreatedDays";e={[math]::Abs((New-TimeSpan -Start (Get-Date) -End $_.Created).Days)}} | Sort-Object -Property 'CreatedDays' -Descending
 
 
 ##################################STOPPED ON PAGE 96 #########################################
