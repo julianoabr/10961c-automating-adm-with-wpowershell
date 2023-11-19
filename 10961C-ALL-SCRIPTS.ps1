@@ -1270,23 +1270,25 @@ Get-ControlPanelItem | Where-Object -FilterScript {$psitem.Category -match '^(Sy
 Get-ControlPanelItem -Category 'System and Security' | Where-Object -FilterScript {-not ($PSItem.Category -notlike '*System and Security*')} | Sort Name
 
 
-##################################STOPPED ON PAGE 112 #########################################
 
 
+<#
+
+Lesson 4
+Enumerating objects in the pipeline
+In this lesson, you will learn how to enumerate objects in the pipeline so that you can work with one
+object at a time during automation. Enumerating objects builds on the skills you already learned, and it is
+a building block for creating automation scripts.
+Lesson Objectives
+After completing this lesson, you will be able to:
+• Explain the purpose of enumeration.
+• Explain how to enumerate objects by using basic syntax.
+• Perform basic enumerations.
+• Explain how to enumerate objects by using advanced syntax.
+• Perform advanced enumeration.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+#>
 
 
 #Encrypt and Descript File Powershell
@@ -1303,27 +1305,45 @@ Get-ChildItem -Path C:\Temp -File | ForEach-Object -Process {$PSItem.Encrypt()}
 
 Get-ChildItem -Path C:\Temp -File | ForEach-Object -Process {$PSItem.Decrypt()}
 
+<#
+
+Demonstration: Basic enumeration
+In this demonstration, you will see how to use the basic enumeration syntax to enumerate several objects
+in a collection.
+
+
+#>
 
 #Demonstration: Basic enumeration
 
 #1. Display only the name of every service installed on the computer.
 
-Get-Service | Select-Object -Property Name
+Get-service | ForEach-Object {Write-Output $_.Name}
 
 
 #2. Use enumeration to clear the System event log
+
+$systemLog = Get-EventLog -LogName System
+
+foreach ($sLog in $systemLog){
+
+    
+    $sLog 
+}
 
 Clear-EventLog -LogName System 
 
 Get-CimClass -ClassName *event*
 
-$logApp = Get-WmiObject -Class win32_NTLogEvent | Where-Object -FilterScript {$PSItem.LogFile -eq 'Application'} 
+$logApp = Get-WmiObject -Class win32_NTLogEvent | Where-Object -FilterScript {$PSItem.LogFile -eq 'Application'} | Select-Object -First 10
 
 foreach ($log in $logApp){
 
     $log
 
 }
+
+Get-EventLog -LogName * | ForEach { Clear-EventLog $_.Log }
 
 
 #Encrypt and Decrypt Files
@@ -1334,6 +1354,14 @@ Get-ChildItem -Path C:\Temp -File | ForEach-Object -Process {$PSItem.Decrypt()}
 
 1..100 | ForEach-Object {Get-Random}
 
+
+<#
+
+Demonstration: Advanced enumeration
+In this demonstration, you will see two ways to use the advanced enumeration syntax to perform tasks on
+several objects.
+
+#>
 
 #1. Modify all the items in the HKEY_CURRENT_USER\Network\ subkey so that all the names are uppercase.
 
@@ -1375,6 +1403,18 @@ New-Item -Path $PSItem.FullName -ItemType Directory -Name 'Test' -Force -Verbose
 
 }
 
+<#
+
+Lab C: Enumerating objects
+Scenario
+You are a network administrator for Adatum Corporation. You were recently made responsible for
+managing the infrastructure for the London branch office. You have to complete several management
+tasks by using Windows PowerShell. These tasks require you to perform actions on multiple objects.
+Objectives
+After completing this lab, you will be able to enumerate pipeline objects by using both basic and
+advanced syntax.
+
+#>
 
 #1. Display a list of files on the E: drive of your computer.
 
@@ -1393,6 +1433,26 @@ $prcNotepad | get-member
 
 $prcNotepad.GetOwner()
 
+
+<#
+
+Lesson 5
+Sending pipeline data as output
+When you provide information about your network infrastructure, it is often a requirement that you
+provide the information in specific formats. This might mean using a format for displaying on the screen,
+for printing a hard copy, or for storing in a file for later use. In this lesson, you will learn how to send
+pipeline data to files and in various output formats.
+Lesson Objectives
+After completing this lesson, you will be able to:
+• Explain how to write pipeline data to a file.
+• Explain how to convert pipeline data to the comma-separated values (CSV) format.
+• Explain how to convert pipeline data to the XML format.
+• Explain how to convert pipeline data to the JavaScript Object Notation (JSON) format.
+• Explain how to convert pipeline data to the HTML format.
+• Export data.
+• Explain how to send pipeline data to other locations.
+
+#>
 
 #Sending pipeline data as output
 
@@ -1413,6 +1473,19 @@ $svcObj.GetType()
 $svcObjFilter1 = Get-Service | Sort-Object -Property Status,Name | Select-Object -Property DisplayName,Status
 
 $svcObjFilter1 | Get-Member | Select-Object -Property TypeName | Select-Object -First 1
+
+<#
+PAGE 122
+Demonstration: Exporting data
+In this demonstration, you will see different ways to convert and export data.
+Demonstration Steps
+1. Convert a list of processes to HTML.
+2. Create a file named Procs.html that contains an HTML-formatted list of processes.
+3. Convert a list of services to CSV.
+4. Create a file named Serv.csv that contains a CSV-formatted list of services.
+5. Open Serv.csv in Notepad, and decide whether all the data was retained
+
+#>
 
 
 #1. Convert a list of processes to HTML.
@@ -1445,6 +1518,17 @@ Get-Service | Out-Printer -Name 'Microsoft Print to PDF'
 Get-service | Out-GridView
 
 
+<#
+
+Lab D: Sending output to a file
+Scenario
+You need to change some information about Active Directory users and create a report of those changes.
+You are evaluating data formats for reporting the information changes. You must convert data to
+different formats and decide which ones are the most appropriate for your needs.
+Objectives
+After completing this lab, you will be able to convert objects to different formats
+
+#>
 
 #Display the name, department, and city for all the users in the IT department who are located in London, in alphabetical order by name.
 
@@ -1476,15 +1560,48 @@ Invoke-Item C:\Tmp\Users.html
 
 Get-ADUser -Filter * -Properties * | Select-Object -Property Name,Office,City | ConvertTo-Xml -As String
 
-Get-ADUser -Filter * -Properties * | Select-Object -Property Name,Office,City | Export-Clixml -Depth 2 -Path C:\temp\teste.xml
+Get-ADUser -Filter * -Properties * | Select-Object -Property Name,Office,City | Export-Clixml -Depth 2 -Path C:\temp\UserReport.xml
 
 #5. Use Internet Explorer to view UserReport.xml.
 
-
+& 'C:\Program Files\Internet Explorer\iexplore.exe' "C:\temp\UserReport.xml"
 
 #6. Display a list of all the properties of all the Active Directory users in a CSV file.
 
 Get-ADUser -Filter * -Properties * | Export-Csv -Delimiter ';' -NoTypeInformation -Path C:\temp\AllUsers.csv
+
+<#
+
+Module 4
+Understanding how the pipeline works
+Contents:
+Module Overview 4-1
+Lesson 1: Passing pipeline data 4-2
+Lesson 2: Advanced techniques for passing pipeline data 4-8
+Lab: Working with pipeline parameter binding 4-13
+Module Review and Takeaways 4-16
+
+#>
+
+##################################STOPPED ON PAGE 122 #########################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #Understanding how the pipeline works
