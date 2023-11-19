@@ -996,10 +996,95 @@ Clear-EventLog -LogName Security -Confirm:$false -Verbose
 
 Get-ADUser -Filter * | Sort-Object -Property surname | Format-Wide
 
-##################################STOPPED ON PAGE 93 #########################################
+Get-ADUser -Filter * | Select-Object -Property SamAccountName,Surname | Sort-Object -Property Surname | Format-Wide -Column 2
+
+#Demonstration: Measuring objects
+#In this demonstration, you will see how to measure objects by using the Measure-Object command.
+#Demonstration Steps
+#1. Display the number of services on your computer.
+
+$services = Get-Service
+
+$services | Measure-Object
+
+
+#2. Display the number of Active Directory users.
+
+$adUsers = Get-ADUser -Filter *
+
+($adUsers | Measure-Object).Count
+
+#3. Display the total amount and the average amount of virtual memory that the processes are using
+
+$allProcesses = Get-Process 
+
+($allProcesses | Measure-Object -Property VM -Sum).Sum/1GB
+
+($allProcesses | Measure-Object -Property VM -Average).Average/1GB
+
+
+Get-Process | Sort-Object -Property VM | Select-Object -First 10
+
+Get-Service | Sort-Object -Property Name | Select-Object -Last 10
+
+Get-Process | Sort-Object -Property CPU -Descending | Select-Object -First 5 -Skip 1
+
+Get-ADUser -Filter * -Property Department | Sort-Object -Property Department | Select-Object -Unique
+
+Get-Process | Select-Object –Property Name,ID,VM,PM,CPU | Format-Table
+
+Get-Process | Sort-Object –Property CPU –Descending | Select-Object –Property Name,CPU –First 10
+
+
+#Demonstration: Selecting objects
+#In this demonstration, you will see various ways to use the Select-Object command.
+
+#Display 10 processes by largest amount of virtual memory use.
+
+Get-Process | Sort-Object -Property VM -Descending | Select-Object -Property ProcessName,VM -First 10 
+
+#Display the current day of week—for example, Monday or Tuesday.
+
+Get-date -Format dddd
+
+#Display the 10 most recent Security event log entries. Include only the event ID, time written, and event message.
+
+Get-EventLog -LogName Security | Select-Object -Property EventID,TimeWritten,Message -First 10
+
+#Display the names of the Active Directory computers grouped by operating system.
+
+Get-ADComputer -Filter * -Properties Name,OperatingSystem | Select-Object -Property Name,OperatingSystem | Group-Object -Property OperatingSystem  | Format-Table -AutoSize
+
+Get-ADComputer -Filter * -Properties Name,OperatingSystem | Select-Object -Property Name,OperatingSystem | Group-Object -Property OperatingSystem  | Sort-Object -Property Count -Descending | Format-Table -AutoSize
+
+Get-ADComputer -Filter * -Properties Name,OperatingSystem,Enabled | Where-Object -FilterScript {$PSItem.Enabled -eq $true} | Select-Object -Property Name,OperatingSystem | Group-Object -Property OperatingSystem  | Sort-Object -Property Count -Descending | Format-Table -AutoSize
+
+
+#Creating calculated properties
+
+#HASH TABLE - KEY VALUE PAIR
+
+Get-Process | Select-Object Name,ID,@{n='VirtualMemory';e={$PSItem.VM}},@{n='PagedMemory';e={$PSItem.PM}}
+
+Get-Process | 
+Select-Object -Property Name,
+                        ID,
+                        @{n='VirtualMemory(GB)';e={'{0:N2}' -f ($PSItem.VM/1GB)}},
+                        @{n='PagedMemory(MB)';e={'{0:N2}' -f ($PSItem.PM/1MB)}} | Sort-Object -Property 'VirtualMemory(GB)' -Descending
+
+
+<#
+
+Demonstration: Creating calculated properties
+In this demonstration, you will see how to use Select-Object to create calculated properties. You will then
+see how those calculated properties behave like regular properties
+
+#>
 
 
 
+
+##################################STOPPED ON PAGE 96 #########################################
 
 
 
