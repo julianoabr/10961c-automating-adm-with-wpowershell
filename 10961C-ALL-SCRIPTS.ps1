@@ -1074,109 +1074,26 @@ Select-Object -Property Name,
 
 
 <#
-
+PAGE 99
 Demonstration: Creating calculated properties
 In this demonstration, you will see how to use Select-Object to create calculated properties. You will then
 see how those calculated properties behave like regular properties
 
 #>
 
+
+#On LON-CL1, display a list of Active Directory user accounts and their creation dates.
 Get-ADUser -Filter * -Properties * | Select-Object -Property @{n='Account';e={$PSItem.SamAccountName}},@{label='Date Created';expression={$psitem.WhenCreated}}
 
 Get-ADUser -Filter * -Properties * | Select-Object -Property @{n='Account';e={$PSItem.SamAccountName}},@{label='Date Created';expression={$psitem.WhenCreated}} | Sort-Object -Property 'Date Created' -Descending
+
+#View the same list sorted by creation date, from newest to oldest
+
 
 Get-ADUser -Filter * -Properties Name,Created | Select-Object -Property Name,@{n="CreatedDays";e={(New-TimeSpan -Start (Get-Date) -End $_.Created).Days}} #without ABS
 
 Get-ADUser -Filter * -Properties Name,Created | Select-Object -Property Name,@{n="CreatedDays";e={[math]::Abs((New-TimeSpan -Start (Get-Date) -End $_.Created).Days)}} | Sort-Object -Property 'CreatedDays' -Descending
 
-
-##################################STOPPED ON PAGE 96 #########################################
-
-
-
-
-
-
-
-
-
-Get-ADUser -Filter * | Select-Object -Property SamAccountName,Surname | Sort-Object -Property Surname | Format-Wide -Column 2
-
-Get-ChildItem -File | Measure -Property Length -Sum -Average -Minimum -Max
-
-#Display the number of services on your computer.
-$services = Get-Service
-
-$services | Measure-Object
-
-#Display the number of Active Directory users.
-
-$adUsers = Get-ADUser -Filter *
-
-
-($adUsers | Measure-Object).Count
-
-#Display the total amount and the average amount of virtual memory that the processes are using
-
-
-$allProcesses = Get-Process 
-
-($allProcesses | Measure-Object -Property VM -Sum).Sum/1GB
-
-($allProcesses | Measure-Object -Property VM -Average).Average/1GB
-
-
-Get-Process | Sort-Object -Property VM | Select-Object -First 10
-
-Get-Service | Sort-Object -Property Name | Select-Object -Last 10
-
-Get-Process | Sort-Object -Property CPU -Descending | Select-Object -First 5 -Skip 1
-
-Get-ADUser -Filter * -Property Department | Sort-Object -Property Department | Select-Object -Unique
-
-Get-Process | Select-Object –Property Name,ID,VM,PM,CPU | Format-Table
-
-Get-Process | Sort-Object –Property CPU –Descending | Select-Object –Property Name,CPU –First 10
-
-
-#Display 10 processes by largest amount of virtual memory use.
-
-Get-Process | Sort-Object -Property VM -Descending | Select-Object -Property ProcessName,VM -First 10 
-
-#Display the current day of week—for example, Monday or Tuesday.
-
-Get-date -Format dddd
-
-
-#Display the 10 most recent Security event log entries. Include only the event ID, time written, and event message.
-
-
-Get-EventLog -LogName Security | Select-Object -Property EventID,TimeWritten,Message -First 10
-
-#Display the names of the Active Directory computers grouped by operating system.
-
-Get-ADComputer -Filter * -Properties Name,OperatingSystem | Select-Object -Property Name,OperatingSystem | Group-Object -Property OperatingSystem  | Format-Table -AutoSize
-
-Get-ADComputer -Filter * -Properties Name,OperatingSystem | Select-Object -Property Name,OperatingSystem | Group-Object -Property OperatingSystem  | Sort-Object -Property Count -Descending | Format-Table -AutoSize
-
-Get-ADComputer -Filter * -Properties Name,OperatingSystem,Enabled | Where-Object -FilterScript {$PSItem.Enabled -eq $true} | Select-Object -Property Name,OperatingSystem | Group-Object -Property OperatingSystem  | Sort-Object -Property Count -Descending | Format-Table -AutoSize
-
-#HASH TABLE - KEY VALUE PAIR
-
-Get-Process | Select-Object Name,ID,@{n='VirtualMemory';e={$PSItem.VM}},@{n='PagedMemory';e={$PSItem.PM}}
-
-Get-Process | 
-Select-Object -Property Name,
-                        ID,
-                        @{n='VirtualMemory(MB';e={'{0:N2}' -f ($PSItem.VM/1GB)}},
-                        @{n='PagedMemory(MB';e={'{0:N2}' -f ($PSItem.PM/1MB)}}
-
-
-
-#On LON-CL1, display a list of Active Directory user accounts and their creation dates.
-Get-ADUser -Filter * -Properties Name,Created | Select-Object -Property Name,Created
-
-Get-ADUser -Filter * -Properties Name,Created | Select-Object -Property Name,Created | Sort-Object -Property Created -Descending
 
 #View a list of the same users in the same order but displaying the user name and the age of the account, in days.
 
@@ -1189,6 +1106,20 @@ Get-ADUser -Filter * -Properties Name,Created | Select-Object -Property Name,@{n
 Get-ADUser -Filter * -Properties Name,Created | Select-Object -Property Name,@{n="CreatedDays";e={[math]::Abs((New-TimeSpan -Start (Get-Date) -End $_.Created).Days)}}
 
 
+<#
+PAGE 100
+Lab A: Using the pipeline
+Scenario
+You must produce several basic management reports that include specified information about the
+computers in your environment. You will create the reports by using the Windows PowerShell commands
+you have learned in this lesson to organize and format the information displayed.
+Objectives
+After completing this lab, you will be able to modify and sort pipeline objects.
+
+
+
+#>
+
 #1. Display the current day of the year.
 
 (get-date).DayOfYear
@@ -1199,7 +1130,7 @@ Get-HotFix | Select-Object -Property PSComputerName,HotFixID,Caption,InstalledOn
 
 #3. Display a list of available scopes from the DHCP server.
 
-Get-DhcpServerv4Scope -ComputerName ACSWDHC1
+Get-DhcpServerv4Scope -ComputerName AutomiteSRV01
 
 #4. Display a sorted list of enabled Windows Firewall rules.
 
@@ -1212,6 +1143,29 @@ Get-NetNeighbor | Sort-Object
 #6. Display information from the DNS name resolution cache
 
 Get-DnsClientCache | Select-Object -Property Name,Data,TimeToLive,TTL,Type | Sort-Object -Property Name | Format-Table -AutoSize
+
+
+<#
+PAGE 103
+
+Lesson 3
+Filtering objects out of the pipeline
+In this lesson, you will learn how to filter objects out of the pipeline by using the Where-Object cmdlet to
+specify various criteria. This differs from the ability of Select-Object to select several objects from the
+beginning or end of a collection, and it is more flexible. With this new technique, you will be able to keep
+or remove objects based on criteria of almost any complexity.
+Lesson Objectives
+After completing this lesson, you will be able to:
+• List the major Windows PowerShell comparison operators.
+• Explain how to filter objects by using basic syntax.
+• Explain how to filter objects by using advanced syntax.
+• Filter objects.
+• Explain how to optimize filtering performance in the pipeline.
+
+
+
+#>
+
 
 #Filtering objects out of the pipeline
 
@@ -1229,6 +1183,9 @@ Get-Process | Where { -not $PSItem.Responding }
 
 Get-Service | Where {$PSItem.Name.Length –gt 15}
 
+#PAGE 107
+#Demonstration: Filtering
+#In this demonstration, you will see various ways to filter objects out of the pipeline.
 
 
 #1. On LON-CL1, use basic filtering syntax to display a list of the Server Message Block (SMB) shares that include a dollar sign ($) in the share name.
@@ -1250,6 +1207,31 @@ Format-Wide -Property FileSystemLabel -Column 1
 #4. Using advanced filtering syntax but without using the $PSItem variable, display a list of the Windows PowerShell command verbs that begin with the letter C. Display only the verb names in as compact a format as possible.
 
 Get-Command | Where-Object -Property Verb -Like "C*" | Format-Wide -Property Name -Column 3
+
+
+<#
+
+Many Windows PowerShell scripters use a mnemonic, which is a phrase that serves as a simple reminder,
+to help them remember to do the correct thing when they are optimizing performance. The phrase is filter
+left, and it means that any filtering should occur as far to the left, or as close to the beginning of the
+command line, as possible.
+Sometimes, moving filtering as far to the left as possible means that you will not use Where-Object. For
+example, the Get-ChildItem command can produce a list that includes files and folders. Each object
+produced by the command has a property named PSIsContainer. It contains True if the object represents
+a folder and False if the object represents a file. The following command will produce a list that includes
+only files:
+
+Lab B: Filtering objects
+Scenario
+You are continuing your project to create management reports by using Windows PowerShell. You have
+to retrieve additional management information about the computers in your environment. You need the
+output of your commands to include only specified information and objects.
+Objectives
+After completing this lab, you will be able to filter objects out of the pipeline by using basic and advanced
+syntax forms.
+
+
+#>
 
 #1. Display a list of all the users in the Users container of Active Directory.
 
@@ -1286,6 +1268,25 @@ Get-ControlPanelItem -Category 'System and Security'
 Get-ControlPanelItem | Where-Object -FilterScript {$psitem.Category -match '^(System*)'}
 
 Get-ControlPanelItem -Category 'System and Security' | Where-Object -FilterScript {-not ($PSItem.Category -notlike '*System and Security*')} | Sort Name
+
+
+##################################STOPPED ON PAGE 112 #########################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #Encrypt and Descript File Powershell
