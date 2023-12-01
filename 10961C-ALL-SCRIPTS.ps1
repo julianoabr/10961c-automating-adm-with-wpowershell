@@ -1581,9 +1581,102 @@ Lesson 2: Advanced techniques for passing pipeline data 4-8
 Lab: Working with pipeline parameter binding 4-13
 Module Review and Takeaways 4-16
 
+Module Overview
+In this module, you will learn how the Windows PowerShell command-line interface passes objects from
+one command to another in the pipeline. Windows PowerShell has two techniques it can use: passing data
+ByValue and ByPropertyName. By knowing how these techniques work and which one to use in a given
+scenario, you can construct more useful and complex command lines.
+Additional Reading: You can read more about the pipeline in Windows PowerShell at: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_pipelines?view=powershell-7.4
+
+
+Objectives
+After completing this module, you will be able to:
+• Pass data by using the ByValue and ByPropertyName techniques.
+• Describe the advanced techniques for passing pipeline data.
+
+
 #>
 
-##################################STOPPED ON PAGE 122 #########################################
+<#
+PAGE 130
+Demonstration: Passing data by using ByValue
+In this demonstration, you will see how Windows PowerShell performs pipeline parameter binding
+ByValue.
+Demonstration Steps
+
+
+#>
+
+
+#1. On LON-CL1, in Windows PowerShell ISE, type the following command:
+
+Get-Service –Name BITS | Stop-Service
+
+#2. Discover what kind of object the first command in step 1 produces.
+
+$svcType = Get-service -Name BITS
+
+$svcType | Get-Member
+
+$svcType.ServiceType
+
+$svcType.GetType().FullName
+
+#3. Discover what parameters of the second command in step 1 can accept pipeline input ByValue.
+
+get-help Stop-Service -ShowWindow
+
+<#
+-InputObject <System.ServiceProcess.ServiceController[]>
+        Specifies ServiceController objects that represent the services to stop. Enter a variable that contains the objects, or type a command or expression that gets the objects.
+
+        Required?                    true
+        Position?                    0
+        Default value                None
+        Accept pipeline input?       True (ByValue)
+        Accept wildcard characters?  false
+
+
+
+    -Name <System.String[]>
+        Specifies the service names of the services to stop. Wildcard characters are permitted.
+
+        Required?                    true
+        Position?                    0
+        Default value                None
+        Accept pipeline input?       True (ByPropertyName, ByValue)
+        Accept wildcard characters?  true
+
+
+#>
+
+#4. Decide which parameter of the second command in step 1 will receive the output of the first command.
+
+
+#Parameter "Name"
+
+<#
+
+Demonstration: Passing data ByPropertyName
+In this demonstration, you will see how to use ByPropertyName parameters.
+
+#>
+
+#1. On LON-CL1, try to view a list of all processes that are running on all computers listed in Active Directory by using the following command:
+Get-ADComputer LON-DC1 | Get-Process
+#2. Review the error.
+
+
+
+#3. View the properties of the object that Get-ADComputer returns.
+
+
+#4. View the parameters for Get-Process, and then identify any parameters that might work with properties of objects that Get-ADComputer passes.
+
+
+#5. Attempt to view the list of processes again by using a calculated property to pass appropriate input to Get-Process.
+
+##################################STOPPED ON PAGE 133 #########################################
 
 
 
@@ -1595,19 +1688,6 @@ Module Review and Takeaways 4-16
 
 
 
-
-
-
-
-
-
-
-
-
-#Understanding how the pipeline works
-#Two techniques for pipeline parameter binding
-#Byvalue
-#ByPropertyName is tried if Byvalue fails
 
 Get-ADComputer -Filter * | Select-Object -Property @{label='Computername';expression={$PSItem.Name}}
 
